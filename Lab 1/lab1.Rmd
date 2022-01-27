@@ -1,0 +1,161 @@
+---
+title: 'MATH 4753 Laboratory 1 Introduction to R'
+author: 'Nick Castle'
+data: 'January 24, 2022'
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 5
+    number_sections: yes
+    toc: yes
+  pdf_document: default
+---
+
+```{r}
+library(ggplot2)
+```
+
+
+
+# Finding the working directory
+Here I use the getwd() function to obtain the address of the working directory. This should be the "Lab 1" folder after setting the working directory to the source file location using the session tab.
+
+```{r}
+getwd()
+```
+
+# Importing data
+First the provided data is converted to a .csv file in excel. The read.csv() function is then used below to easily bring this data into R in the form of a dataframe. To get an idea of what the data will look like and ensure headers are as they should be the first 6 rows are printed using the head() function.
+
+```{r}
+ddt = read.csv("DDT.csv")
+head(ddt)
+```
+
+
+
+# Familiarizing with data
+
+Below the class function is used to deterimine the class of ddt as well as all of its individual collumns.
+
+```{r}
+class(ddt)
+sapply(ddt,class)
+```
+The qualitative variables of the ddt dataframe include "RIVER" and "SPECIES". Quantitative variables include "MILE", "LENGTH", "WEIGHT", and "DDT".
+
+```{r}
+unique(ddt$SPECIES)
+```
+There are three different species analyzed in the ddt dataframe, "CCATFISH", "SMBUFFALO" and "LMBASS".
+
+As requested, subsets of ddt are created below and displayed in tabular form. The first looks at the characteristics of fish of species "LMBASS" with a weight over 800 gms. The second looks are fish caught in the "SCM" river with a "DDT" value over 4.0. 
+
+```{r}
+subset(ddt, WEIGHT > 800 & SPECIES == 'LMBASS')
+subset(ddt, DDT > 4.0 & RIVER == 'SCM')
+```
+# Clicker Questions
+
+Q1. The mean length of fish in ddt is 42.8125.
+
+Q2. The standard deviation of fish weight in ddt is 376.5461.
+
+Q3. 0 - This is not the same plot, the axes are flipped.
+
+Q4. v[20] is 20, v[20]/20 is therefore 1.
+
+```{r}
+cat("Mean length: ", mean(ddt$LENGTH), "\n")
+cat("Standard deviation of weight: ", sd(ddt$WEIGHT), "\n")
+
+plot(ddt$LENGTH, ddt$WEIGHT, main="Weight vs length of fish", xlab='Length',
+     ylab='Weight')
+v = 1:20
+cat("v[20]/20:", v[20]/20, "\n")
+```
+# Barplots
+A table is made of the number of fish caught in each river in the ddr data frame. This is then plotted with different colors for each river as requested.
+
+```{r}
+x = table(ddt$RIVER)
+x
+barplot(x, col = 1:nrow(x), main="Fish caught vs river caught in")
+```
+
+The next plot and table see the addition of a third variable, the species of fish caught. A table is constructed of number of fish caught related to the rivers they were caught in, color-coded based on fish species. This is accomplished automatically with the barplot() function. Nicer coloring and a neatly placed legend are also added.
+```{r}
+x = table(ddt$SPECIES, ddt$RIVER)
+x
+barplot(x, legend = TRUE, col = 1:nrow(x), args.legend = list(x = "topright", inset = (c(.35,0))))
+```
+
+# Pie charts
+Pie charts are made using the pie() command in the base package of R. Pie charts are made of the number of fish caught of each species and of the rivers they were caught in.
+```{r}
+x = table(ddt$SPECIES)
+pie(x, main="Species of fish caught")
+x = table(ddt$RIVER)
+pie(x, , main="Fish caught by river")
+```
+
+# Boxplots
+Boxplots for the distribution of ddt, length and weight among the fish were constructed using the boxplot() function in R.
+
+```{r}
+boxplot(ddt$DDT, data=ddt, main="DDT")
+boxplot(ddt$LENGTH, data=ddt, main="Length")
+boxplot(ddt$WEIGHT, data=ddt, main="Weight")
+```
+
+
+# Coplots
+Coplots were made to relate the weight of fish to their length according to the river they were caught in and their weight to the amount of ddt in them according to their species. This was accomplished using the coplot() function in R.
+
+```{r}
+coplot(WEIGHT ~ LENGTH|RIVER, data=ddt)
+coplot(WEIGHT ~ DDT|SPECIES, data=ddt)
+```
+
+# Bonus round
+Plots are presented and it is up to us to use ggplot to replicate them. The first plot is a boxplot relating weight to species, colored according to the river they were caught in. Labels for each axis and a title with my name are added along with a caption with a more representative title for the plot.
+```{r}
+ b = ggplot(ddt, aes(x = SPECIES, y = WEIGHT))
+ b = b + geom_boxplot(aes(fill= RIVER)) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) + 
+  labs(title="Nick Castle", 
+       subtitle="Weight vs Species",
+       caption="Source: DDT.csv",
+       x="Species",
+       y="Weight")
+ b
+```
+
+The next plot was a violin plot which I had not heard of before. ggplot easily allows this to be made. A plot was made relating length to river caught in with species determining color. A representative title, my name, and axis titles are also added.
+
+```{r}
+ b = ggplot(ddt, aes(x = RIVER, y = LENGTH))
+ b = b + geom_violin(aes(fill= SPECIES)) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) + 
+  labs(title="Nick Castle", 
+       subtitle="Length vs River",
+       caption="Source: DDT.csv",
+       x="River",
+       y="Length")
+ b
+```
+Length is related to weight of fish caught with species determining the coloring in the following scatterplot. It should be identical to the one presented in our assignment. A title, my name, and axis titles are also added.
+
+```{r}
+ b = ggplot(ddt, aes(x = WEIGHT, y = LENGTH)) + 
+  geom_point(aes(color = SPECIES)) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) + 
+  labs(title="Nick Castle", 
+       subtitle="Length vs Weight",
+       caption="Source: DDT.csv",
+       x="Weight",
+       y="Length")
+ b
+```
+
